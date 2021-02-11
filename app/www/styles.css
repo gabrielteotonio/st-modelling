@@ -18,10 +18,6 @@ color: #FFFFFF;
   color: black;
 }
 
-.div {
-  height: 200px;
-  width: 100px;
-}
 
 @media (min-width: 768px) {
   .sidebar-mini.sidebar-collapse .main-header .logo {
@@ -73,6 +69,10 @@ label {
   font-size: 20px;
 }
 
+/*.skin-blue .main-header .logo .div {
+  margin-right: 10px;
+}*/
+
 .skin-blue .main-header .logo {
   background-color: #0098d7;/*#3E4965;*/
     color: black;
@@ -82,7 +82,7 @@ label {
     left: 52px;
   z-index: 1030;
   padding: 0;
-  width: 345px
+  width: 345px;
 }
 
 .skin-blue .main-header .logo:hover{

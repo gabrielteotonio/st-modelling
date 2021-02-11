@@ -1,5 +1,5 @@
 header <- dashboardHeaderPlus(fixed = T,
-                              title = div(img(src="noaa-logo.png", height = 38, weight = 29), ""),
+                              title = div(style="margin-right: 180px",img(src="noaa-logo.png", height = 38, weight = 29), ""),
                               titleWidth = 420,
                               enable_rightsidebar = F,
                               rightSidebarIcon = "bullhorn"
