@@ -37,6 +37,6 @@ server <- function(input, output) {
       addMarkers(lng = -73.76401, 
                  lat = 40.63915, 
                  label = "NOAA Climatological Data Station",
-                 labelOptions = labelOptions(noHide = T))
+                 labelOptions = labelOptions(interactive = T))
   })
 }
