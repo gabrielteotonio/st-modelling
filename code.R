@@ -48,5 +48,23 @@ highchart(type = "stock") %>%
 
 highchart(type = "stock") %>% 
   hc_add_series(as.ts(data_min_max, frequency = 365), type = "line")
+#######
 
 hchart(data_sum, "line", hcaes(x = date, y = series, group = variable))
+
+highchart(type = "chart") %>% 
+  hc_add_series(data$visibility %>% filter(as.Date(time_hour) == "2010-01-01"), 
+                type = "line")
+
+NOAA_data %>%
+  filter(as.Date(time_hour) >= "2010-01-01", as.Date(time_hour) <= "2010-01-30") %>% 
+  mutate(dt = as.Date(time_hour)) %>% 
+  as_tibble() %>% 
+  select(visibility, dt) 
+
+data %>%
+  group_by_key() %>%
+  index_by(date = ~ year(.)) %>% 
+  summarise(across(starts_with("visibi"), mean)
+  ) %>%  
+  gather("variable", "series", -c(date, station))

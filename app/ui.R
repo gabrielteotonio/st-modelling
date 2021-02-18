@@ -30,6 +30,31 @@ body <- dashboardBody(
               column(width = 3,
                      div(h3("Exploratory Analysis"), h5("Data from January 2010 to July 2018"))
               )
+            ),
+            fluidRow(
+              column(width = 3,
+                     wellPanel(
+                       h4("Filter"),
+                       selectInput("series",
+                                   "Time series",
+                                   choices = colnames(data)[-c(1, 2)]),
+                       dateRangeInput("dt",
+                                      "Time window",
+                                      start = "2010-01-01",
+                                      end = "2010-01-30",
+                                      min = "2010-01-01",
+                                      max = "2018-07-27"),
+                       radioButtons("aggregation",
+                                    "Aggregation",
+                                    choices = c("day", "month", "quarter", "year"),
+                                    selected = "day",
+                                    inline = TRUE),
+                       leafletOutput("locationMap", height = "200px") %>% withSpinner(color="#ABB9DB")
+                     )
+              ),
+              column(width = 9,
+                     highchartOutput("tsPlot", height = "300px") %>% withSpinner(color="#ABB9DB")
+              )
             )
     ),
     
