@@ -68,3 +68,48 @@ data %>%
   summarise(across(starts_with("visibi"), mean)
   ) %>%  
   gather("variable", "series", -c(date, station))
+
+#######
+a <- pacf(NOAA_data$visibility)
+df <- tibble(lag = a$lag, value = a$acf)
+
+
+hchart(
+  df, 
+  "column",
+  hcaes(x = lag, y = value)#,
+  #color = c("#7CB5EC", "#F7A35C"),
+  #name = c("Year 1999", "Year 2008"),
+  #showInLegend = c(TRUE, FALSE) # only show the first one in the legend
+) %>% 
+  hc_tooltip(pointFormat = '{point.y:.2f} ') %>% 
+  hc_yAxis(max = 1,
+           plotLines = list(
+             list(
+               color = "#FF0000",
+               width = 2,
+               value = 2/sqrt(a$n.used),
+               # the zIndex is used to put the label text over the grid lines 
+               zIndex = 1
+             )
+           ),
+           plotLines = list(
+             list(
+               color = "#FF0000",
+               width = 2,
+               value = -2/sqrt(a$n.used),
+               # the zIndex is used to put the label text over the grid lines 
+               zIndex = 1
+             )
+           )
+  ) %>% 
+  hc_title(text = "Auto-correlogram",
+           margin = 24, align = "left",
+           style = list(color = "grey", useHTML = TRUE))
+
+
+NOAA_data %>%
+  group_by_key() %>%
+  index_by(date = ~ year(.)) %>% 
+  summarise(across(starts_with("wind"), mean)) %>% 
+  gather("variable", "series", -c(date, station))

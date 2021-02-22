@@ -37,23 +37,34 @@ body <- dashboardBody(
                        h4("Filter"),
                        selectInput("series",
                                    "Time series",
-                                   choices = colnames(data)[-c(1, 2)]),
+                                   choices = colnames(NOAA_data)[-c(1, 2)]),
+                       hr(),
                        dateRangeInput("dt",
                                       "Time window",
                                       start = "2010-01-01",
                                       end = "2010-01-30",
                                       min = "2010-01-01",
                                       max = "2018-07-27"),
+                       hr(),
                        radioButtons("aggregation",
                                     "Aggregation",
                                     choices = c("day", "month", "quarter", "year"),
                                     selected = "day",
                                     inline = TRUE),
-                       leafletOutput("locationMap", height = "200px") %>% withSpinner(color="#ABB9DB")
+                       hr(),
+                       leafletOutput("locationMap", height = "400px") %>% withSpinner(color="#ABB9DB")
                      )
               ),
               column(width = 9,
-                     highchartOutput("tsPlot", height = "300px") %>% withSpinner(color="#ABB9DB")
+                     highchartOutput("tsPlot", height = "400px") %>% withSpinner(color="#ABB9DB"),
+                     fluidRow(
+                       column(width = 6,
+                              highchartOutput("acfPlot", height = "400px") %>% withSpinner(color="#ABB9DB")
+                              ),
+                       column(width = 6,
+                              highchartOutput("pacfPlot", height = "400px") %>% withSpinner(color="#ABB9DB")
+                              )
+                     )
               )
             )
     ),
