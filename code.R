@@ -113,3 +113,4 @@ NOAA_data %>%
   index_by(date = ~ year(.)) %>% 
   summarise(across(starts_with("wind"), mean)) %>% 
   gather("variable", "series", -c(date, station))
+##################################
