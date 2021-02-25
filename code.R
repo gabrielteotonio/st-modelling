@@ -114,3 +114,80 @@ NOAA_data %>%
   summarise(across(starts_with("wind"), mean)) %>% 
   gather("variable", "series", -c(date, station))
 ##################################
+
+fit <- NOAA_data %>%
+  group_by_key() %>%
+  index_by(date = ~ as_date(.)) %>% 
+  summarise(
+    temp = mean(temperature, na.rm = TRUE),
+    visb = mean(visibility, na.rm = TRUE),
+    wind = mean(wind_speed, na.rm = TRUE),
+    humi = mean(relative_humidity, na.rm = TRUE)
+  ) %>%  
+  gather("variable", "series", -c(date, station)) %>%
+  filter(variable == "temp") %>% 
+  model(
+    rw = ARIMA(series ~ pdq(p = 1, d = 0, q = 0) + PDQ(0, 0, 0)),
+    ar = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0) + PDQ(0, 0, 0)),
+    ma = ARIMA(series ~ pdq(p = 0, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
+    arma = ARIMA(series ~ pdq(p = 0:12, d = 0, q = 0:12) + PDQ(0, 0, 0)),
+    arima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
+    sarima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0:24, 0:24, 0:24)))
+
+fit %>% 
+  glance() %>% 
+  filter(AIC == min(AIC)) %>% 
+  head(1)
+
+fit %>% 
+  accuracy()
+
+forecast <-fit %>% 
+  forecast(h = 30, level = 95) %>% 
+  filter(.model == "rw") %>% 
+  hilo(level = 95) %>% 
+  transmute(station,
+            date,
+            "Point Forecast" = .mean,
+            "Lo 95" = `95%`$lower,
+            "Hi 95" = `95%`$upper) %>% 
+  gather("variable", "series", -c(date, station))
+##############################
+data <- NOAA_data %>%
+  group_by_key() %>%
+  index_by(date = ~ as_date(.)) %>% 
+  summarise(
+    temp = mean(temperature, na.rm = TRUE),
+    visb = mean(visibility, na.rm = TRUE),
+    wind = mean(wind_speed, na.rm = TRUE),
+    humi = mean(relative_humidity, na.rm = TRUE)
+  ) %>%  
+  gather("variable", "series", -c(date, station)) %>%
+  filter(variable == "temp")
+
+hchart(data, "line", hcaes(x = date, y = series)) %>% 
+  hc_yAxis(title = list(text = "Value"),
+           opposite = FALSE,
+           labels = list(format = "{value}")) %>% 
+  hc_title(text = "Time Series",
+           margin = 24, align = "left",
+           style = list(color = "grey", useHTML = TRUE)) %>% 
+  hc_xAxis(title = list(text = "")) %>% 
+  hc_tooltip(pointFormat = '{point.y:.2f} ') %>% 
+  hc_colors(c("#61729C", "#ABB9DB")) %>% 
+  hc_legend(align = "right", verticalAlign = "middle", layout = "vertical") %>% 
+  hc_add_series(forecast %>% filter(variable == "Point Forecast"), 
+                "line", 
+                hcaes(x = date, y = series), 
+                color = "red",
+                name = "Point Forecast") %>% 
+  hc_add_series(forecast %>% filter(variable == "Lo 95"),
+                "line", 
+                hcaes(x = date, y = series), 
+                color = "green",
+                name = "Lower 95") %>% 
+    hc_add_series(forecast %>% filter(variable == "Hi 95"),
+                  "line", 
+                  hcaes(x = date, y = series), 
+                  color = "green",
+                  name = "Upper 95")

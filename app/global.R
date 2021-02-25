@@ -16,6 +16,7 @@ library(shinyjs)
 library(shinycssloaders)
 library(tsibble)
 library(fable)
+library(feasts)
 library(lubridate)
 
 # Data -----
