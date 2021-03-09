@@ -111,7 +111,11 @@ body <- dashboardBody(
               column(width = 9,
                      fluidRow(
                        column(width = 6,
-                              highchartOutput("forecastPlot", height = "400px") %>% withSpinner(color="#ABB9DB"))
+                              highchartOutput("forecastPlot", height = "400px") %>% withSpinner(color="#ABB9DB")
+                              ),
+                       column(width = 6,
+                              highchartOutput("residualsPlot", height = "400px") %>% withSpinner(color="#ABB9DB")
+                              )
                      )
               )
             )
