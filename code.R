@@ -186,8 +186,8 @@ hchart(data, "line", hcaes(x = date, y = series)) %>%
                 hcaes(x = date, y = series), 
                 color = "green",
                 name = "Lower 95") %>% 
-    hc_add_series(forecast %>% filter(variable == "Hi 95"),
-                  "line", 
-                  hcaes(x = date, y = series), 
-                  color = "green",
-                  name = "Upper 95")
+  hc_add_series(forecast %>% filter(variable == "Hi 95"),
+                "line", 
+                hcaes(x = date, y = series), 
+                color = "green",
+                name = "Upper 95")

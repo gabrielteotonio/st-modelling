@@ -107,6 +107,12 @@ body <- dashboardBody(
                                     "Tap to model!",
                                     icon = icon("magic"))
                      )
+              ),
+              column(width = 9,
+                     fluidRow(
+                       column(width = 6,
+                              highchartOutput("forecastPlot", height = "400px") %>% withSpinner(color="#ABB9DB"))
+                     )
               )
             )
     )

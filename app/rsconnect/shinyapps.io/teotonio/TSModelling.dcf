@@ -1,0 +1,12 @@
+name: TSModelling
+title: TSModelling
+username:
+account: teotonio
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3758512
+bundleId: 4318906
+url: https://teotonio.shinyapps.io/TSModelling/
+when: 1615256036.13553
+asMultiple: FALSE
+asStatic: FALSE
