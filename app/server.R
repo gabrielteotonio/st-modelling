@@ -341,7 +341,123 @@ server <- function(input, output) {
   })
   
   output$residualsPlot <- renderHighchart({
+    SelectData <- selectTimeSeriesModelData()
+    fit <- SelectData$Fit
     
+    best_model <- fit %>%
+      glance() %>%
+      filter(AIC == min(AIC)) %>%
+      head(1)
+    
+    data <- fit %>% 
+      residuals() %>% 
+      filter(.model == best_model$.model)
+    
+    hchart(data, "line", hcaes(x = date, y = .resid)) %>% 
+      hc_yAxis(title = list(text = "Value"),
+               opposite = FALSE,
+               labels = list(format = "{value}")) %>% 
+      hc_title(text = "Residuals",
+               margin = 24, align = "left",
+               style = list(color = "grey", useHTML = TRUE)) %>% 
+      hc_xAxis(title = list(text = "")) %>% 
+      hc_tooltip(pointFormat = '{point.y:.2f} ') %>% 
+      hc_colors(c("#61729C", "#ABB9DB")) %>% 
+      hc_legend(align = "right", verticalAlign = "middle", layout = "vertical")  
+  })
+  
+  output$residualsACF <- renderHighchart({
+    SelectData <- selectTimeSeriesModelData()
+    fit <- SelectData$Fit
+    
+    best_model <- fit %>%
+      glance() %>%
+      filter(AIC == min(AIC)) %>%
+      head(1)
+    
+    data <- fit %>% 
+      residuals() %>% 
+      filter(.model == best_model$.model)
+    
+    a <- acf(data[, 5])
+    df <- tibble(lag = a$lag, value = a$acf)
+    hchart(df,
+           "column",
+           hcaes(x = lag, y = value)) %>%
+      hc_tooltip(pointFormat = '{point.y:.2f} ') %>%
+      hc_yAxis(max = 1,
+               plotLines = list(
+                 list(
+                   color = "#FF0000",
+                   width = 2,
+                   value = 2/sqrt(a$n.used),
+                   zIndex = 1
+                 ),
+                 list(
+                   color = "#FF0000",
+                   width = 2,
+                   value = -2/sqrt(a$n.used),
+                   zIndex = 1
+                 )
+               )) %>%
+      hc_title(text = "Auto-correlogram",
+               margin = 24, align = "left",
+               style = list(color = "grey", useHTML = TRUE))
+  })
+  
+  output$qqPlot <- renderHighchart({
+    SelectData <- selectTimeSeriesModelData()
+    fit <- SelectData$Fit
+    
+    best_model <- fit %>%
+      glance() %>%
+      filter(AIC == min(AIC)) %>%
+      head(1)
+    
+    residual <- fit %>% 
+      residuals() %>% 
+      filter(.model == best_model$.model)
+    
+    qq <- qqnorm(residual$.resid)
+    data <- tibble(x = qq$x, y =  qq$y)
+    
+    hchart(data,
+           "point",
+           hcaes(x = x, y = y)) %>% 
+      hc_yAxis(title = list(text = "Sample quantiles"),
+               opposite = FALSE,
+               labels = list(format = "{value}")) %>% 
+      hc_title(text = "Normal Q-Q Plot of residuals",
+               margin = 24, align = "left",
+               style = list(color = "grey", useHTML = TRUE)) %>% 
+      hc_xAxis(title = list(text = "Theoretical quantiles")) %>% 
+      hc_tooltip(pointFormat = '{point.y:.2f} ') %>% 
+      hc_colors(c("#61729C", "#ABB9DB")) %>% 
+      hc_legend(align = "right", verticalAlign = "middle", layout = "vertical")  
+  })
+  
+  output$measuresTab <- renderDT({
+    SelectData <- selectTimeSeriesModelData()
+    fit <- SelectData$Fit
+    
+    measures_ic <- fit %>% glance()
+    measures_fit <- fit %>% accuracy()
+    data <- measures_ic %>% 
+      inner_join(measures_fit) %>% 
+      select(.model, AIC, AICc, BIC, ME, RMSE, MAE, MAPE) %>% 
+      mutate(across(2:8, round, 4)) %>% 
+      rename(Model = .model)
+    
+    datatable(data,
+              rownames = FALSE,
+              extensions = 'Responsive',
+              style = 'bootstrap',
+              class = 'table-bordered table-condensed',
+              options = list(autoWidth = TRUE,
+                             searching = FALSE,
+                             lengthChange = FALSE,
+                             pagingType = 'numbers',
+                             dom = 't'))
   })
   
 }

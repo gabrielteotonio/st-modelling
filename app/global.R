@@ -18,6 +18,7 @@ library(tsibble)
 library(fable)
 library(feasts)
 library(lubridate)
+library(DT)
 
 # Data -----
 NOAA_data <- read_csv("data/jfk_weather_cleaned.csv", 

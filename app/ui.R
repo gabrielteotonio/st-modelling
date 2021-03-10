@@ -116,6 +116,19 @@ body <- dashboardBody(
                        column(width = 6,
                               highchartOutput("residualsPlot", height = "400px") %>% withSpinner(color="#ABB9DB")
                               )
+                     ),
+                     fluidRow(
+                       column(width = 6,
+                              highchartOutput("residualsACF", height = "400px") %>% withSpinner(color="#ABB9DB")
+                              ),
+                       column(width = 6,
+                              highchartOutput("qqPlot", height = "400px") %>% withSpinner(color="#ABB9DB")
+                              )
+                     ),
+                     fluidRow(
+                       column(width = 12,
+                              dataTableOutput("measuresTab") %>% withSpinner(color="#ABB9DB")
+                              )
                      )
               )
             )
