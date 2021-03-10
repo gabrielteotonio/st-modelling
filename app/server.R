@@ -126,7 +126,7 @@ server <- function(input, output) {
   ######### Panel 2 ######### 
   
   # Filtering by ts input model -----
-  selectTimeSeriesModelData <- reactive({
+  selectTimeSeriesModelData <- eventReactive(input$action_model, {
     if (input$aggregation_model == "day") {
       fit <- NOAA_data %>%
         filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
