@@ -128,26 +128,47 @@ server <- function(input, output) {
   # Filtering by ts input model -----
   selectTimeSeriesModelData <- eventReactive(input$action_model, {
     if (input$aggregation_model == "day") {
-      fit <- NOAA_data %>%
-        filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
-        group_by_key() %>%
-        index_by(date = ~ as_date(.)) %>% 
-        summarise(
-          temperature = mean(temperature, na.rm = TRUE),
-          visibility = mean(visibility, na.rm = TRUE),
-          wind_speed = mean(wind_speed, na.rm = TRUE),
-          relative_humidity = mean(relative_humidity, na.rm = TRUE)
-        ) %>%  
-        gather("variable", "series", -c(date, station)) %>%
-        filter(variable == input$series_model) %>% 
-        model(
-          rw = ARIMA(series ~ pdq(p = 1, d = 0, q = 0) + PDQ(0, 0, 0)),
-          ar = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0) + PDQ(0, 0, 0)),
-          ma = ARIMA(series ~ pdq(p = 0, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
-          arma = ARIMA(series ~ pdq(p = 0:12, d = 0, q = 0:12) + PDQ(0, 0, 0)),
-          arima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
-          sarima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0:24, 0:24, 0:24)))
-      
+      if (input$seasonal_step == TRUE) {
+        fit <- NOAA_data %>%
+          filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
+          group_by_key() %>%
+          index_by(date = ~ as_date(.)) %>% 
+          summarise(
+            temperature = mean(temperature, na.rm = TRUE),
+            visibility = mean(visibility, na.rm = TRUE),
+            wind_speed = mean(wind_speed, na.rm = TRUE),
+            relative_humidity = mean(relative_humidity, na.rm = TRUE)
+          ) %>%  
+          gather("variable", "series", -c(date, station)) %>%
+          filter(variable == input$series_model) %>% 
+          model(
+            rw = ARIMA(series ~ pdq(p = 1, d = 0, q = 0) + PDQ(0, 0, 0)),
+            ar = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0) + PDQ(0, 0, 0)),
+            ma = ARIMA(series ~ pdq(p = 0, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
+            arma = ARIMA(series ~ pdq(p = 0:12, d = 0, q = 0:12) + PDQ(0, 0, 0)),
+            arima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
+            sarima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0:24, 0:24, 0:24)))
+      } else {
+        fit <- NOAA_data %>%
+          filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
+          group_by_key() %>%
+          index_by(date = ~ as_date(.)) %>% 
+          summarise(
+            temperature = mean(temperature, na.rm = TRUE),
+            visibility = mean(visibility, na.rm = TRUE),
+            wind_speed = mean(wind_speed, na.rm = TRUE),
+            relative_humidity = mean(relative_humidity, na.rm = TRUE)
+          ) %>%  
+          gather("variable", "series", -c(date, station)) %>%
+          filter(variable == input$series_model) %>% 
+          model(
+            rw = ARIMA(series ~ pdq(p = 1, d = 0, q = 0) + PDQ(0, 0, 0)),
+            ar = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0) + PDQ(0, 0, 0)),
+            ma = ARIMA(series ~ pdq(p = 0, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
+            arma = ARIMA(series ~ pdq(p = 0:12, d = 0, q = 0:12) + PDQ(0, 0, 0)),
+            arima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0, 0, 0)))
+      }
+        
       data <- NOAA_data %>%
         filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
         group_by_key() %>%
@@ -168,25 +189,46 @@ server <- function(input, output) {
         )
       )
      } else if (input$aggregation_model == "month") {
-      fit <- NOAA_data %>%
-        filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
-        group_by_key() %>%
-        index_by(date = ~ yearmonth(.)) %>%
-        summarise(
-          temperature = mean(temperature, na.rm = TRUE),
-          visibility = mean(visibility, na.rm = TRUE),
-          wind_speed = mean(wind_speed, na.rm = TRUE),
-          relative_humidity = mean(relative_humidity, na.rm = TRUE)
-        ) %>%
-        gather("variable", "series", -c(date, station)) %>%
-        filter(variable == input$series_model) %>%
-        model(
-          rw = ARIMA(series ~ pdq(p = 1, d = 0, q = 0) + PDQ(0, 0, 0)),
-          ar = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0) + PDQ(0, 0, 0)),
-          ma = ARIMA(series ~ pdq(p = 0, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
-          arma = ARIMA(series ~ pdq(p = 0:12, d = 0, q = 0:12) + PDQ(0, 0, 0)),
-          arima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
-          sarima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0:24, 0:24, 0:24)))
+       if (input$seasonal_step == TRUE) {
+         fit <- NOAA_data %>%
+           filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
+           group_by_key() %>%
+           index_by(date = ~ yearmonth(.)) %>% 
+           summarise(
+             temperature = mean(temperature, na.rm = TRUE),
+             visibility = mean(visibility, na.rm = TRUE),
+             wind_speed = mean(wind_speed, na.rm = TRUE),
+             relative_humidity = mean(relative_humidity, na.rm = TRUE)
+           ) %>%  
+           gather("variable", "series", -c(date, station)) %>%
+           filter(variable == input$series_model) %>% 
+           model(
+             rw = ARIMA(series ~ pdq(p = 1, d = 0, q = 0) + PDQ(0, 0, 0)),
+             ar = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0) + PDQ(0, 0, 0)),
+             ma = ARIMA(series ~ pdq(p = 0, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
+             arma = ARIMA(series ~ pdq(p = 0:12, d = 0, q = 0:12) + PDQ(0, 0, 0)),
+             arima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
+             sarima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0:24, 0:24, 0:24)))
+       } else {
+         fit <- NOAA_data %>%
+           filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
+           group_by_key() %>%
+           index_by(date = ~ yearmonth(.)) %>% 
+           summarise(
+             temperature = mean(temperature, na.rm = TRUE),
+             visibility = mean(visibility, na.rm = TRUE),
+             wind_speed = mean(wind_speed, na.rm = TRUE),
+             relative_humidity = mean(relative_humidity, na.rm = TRUE)
+           ) %>%  
+           gather("variable", "series", -c(date, station)) %>%
+           filter(variable == input$series_model) %>% 
+           model(
+             rw = ARIMA(series ~ pdq(p = 1, d = 0, q = 0) + PDQ(0, 0, 0)),
+             ar = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0) + PDQ(0, 0, 0)),
+             ma = ARIMA(series ~ pdq(p = 0, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
+             arma = ARIMA(series ~ pdq(p = 0:12, d = 0, q = 0:12) + PDQ(0, 0, 0)),
+             arima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0, 0, 0)))
+       }
 
       data <- NOAA_data %>%
         filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
@@ -208,25 +250,46 @@ server <- function(input, output) {
         )
       )
     } else if (input$aggregation_model == "quarter") {
-      fit <- NOAA_data %>%
-        filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
-        group_by_key() %>%
-        index_by(date = ~ yearquarter(.)) %>%
-        summarise(
-          temperature = mean(temperature, na.rm = TRUE),
-          visibility = mean(visibility, na.rm = TRUE),
-          wind_speed = mean(wind_speed, na.rm = TRUE),
-          relative_humidity = mean(relative_humidity, na.rm = TRUE)
-        ) %>%
-        gather("variable", "series", -c(date, station)) %>%
-        filter(variable == input$series_model) %>%
-        model(
-          rw = ARIMA(series ~ pdq(p = 1, d = 0, q = 0) + PDQ(0, 0, 0)),
-          ar = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0) + PDQ(0, 0, 0)),
-          ma = ARIMA(series ~ pdq(p = 0, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
-          arma = ARIMA(series ~ pdq(p = 0:12, d = 0, q = 0:12) + PDQ(0, 0, 0)),
-          arima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
-          sarima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0:24, 0:24, 0:24)))
+      if (input$seasonal_step == TRUE) {
+        fit <- NOAA_data %>%
+          filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
+          group_by_key() %>%
+          index_by(date = ~ yearquarter(.)) %>% 
+          summarise(
+            temperature = mean(temperature, na.rm = TRUE),
+            visibility = mean(visibility, na.rm = TRUE),
+            wind_speed = mean(wind_speed, na.rm = TRUE),
+            relative_humidity = mean(relative_humidity, na.rm = TRUE)
+          ) %>%  
+          gather("variable", "series", -c(date, station)) %>%
+          filter(variable == input$series_model) %>% 
+          model(
+            rw = ARIMA(series ~ pdq(p = 1, d = 0, q = 0) + PDQ(0, 0, 0)),
+            ar = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0) + PDQ(0, 0, 0)),
+            ma = ARIMA(series ~ pdq(p = 0, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
+            arma = ARIMA(series ~ pdq(p = 0:12, d = 0, q = 0:12) + PDQ(0, 0, 0)),
+            arima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
+            sarima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0:24, 0:24, 0:24)))
+      } else {
+        fit <- NOAA_data %>%
+          filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
+          group_by_key() %>%
+          index_by(date = ~ yearquarter(.)) %>% 
+          summarise(
+            temperature = mean(temperature, na.rm = TRUE),
+            visibility = mean(visibility, na.rm = TRUE),
+            wind_speed = mean(wind_speed, na.rm = TRUE),
+            relative_humidity = mean(relative_humidity, na.rm = TRUE)
+          ) %>%  
+          gather("variable", "series", -c(date, station)) %>%
+          filter(variable == input$series_model) %>% 
+          model(
+            rw = ARIMA(series ~ pdq(p = 1, d = 0, q = 0) + PDQ(0, 0, 0)),
+            ar = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0) + PDQ(0, 0, 0)),
+            ma = ARIMA(series ~ pdq(p = 0, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
+            arma = ARIMA(series ~ pdq(p = 0:12, d = 0, q = 0:12) + PDQ(0, 0, 0)),
+            arima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0, 0, 0)))
+      }
 
       data <- NOAA_data %>%
         filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
@@ -248,25 +311,46 @@ server <- function(input, output) {
         )
       )
     } else {
-      fit <- NOAA_data %>%
-        filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
-        group_by_key() %>%
-        index_by(date = ~ year(.)) %>%
-        summarise(
-          temperature = mean(temperature, na.rm = TRUE),
-          visibility = mean(visibility, na.rm = TRUE),
-          wind_speed = mean(wind_speed, na.rm = TRUE),
-          relative_humidity = mean(relative_humidity, na.rm = TRUE)
-        ) %>%
-        gather("variable", "series", -c(date, station)) %>%
-        filter(variable == input$series_model) %>%
-        model(
-          rw = ARIMA(series ~ pdq(p = 1, d = 0, q = 0) + PDQ(0, 0, 0)),
-          ar = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0) + PDQ(0, 0, 0)),
-          ma = ARIMA(series ~ pdq(p = 0, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
-          arma = ARIMA(series ~ pdq(p = 0:12, d = 0, q = 0:12) + PDQ(0, 0, 0)),
-          arima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
-          sarima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0:24, 0:24, 0:24)))
+      if (input$seasonal_step == TRUE) {
+        fit <- NOAA_data %>%
+          filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
+          group_by_key() %>%
+          index_by(date = ~ year(.)) %>% 
+          summarise(
+            temperature = mean(temperature, na.rm = TRUE),
+            visibility = mean(visibility, na.rm = TRUE),
+            wind_speed = mean(wind_speed, na.rm = TRUE),
+            relative_humidity = mean(relative_humidity, na.rm = TRUE)
+          ) %>%  
+          gather("variable", "series", -c(date, station)) %>%
+          filter(variable == input$series_model) %>% 
+          model(
+            rw = ARIMA(series ~ pdq(p = 1, d = 0, q = 0) + PDQ(0, 0, 0)),
+            ar = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0) + PDQ(0, 0, 0)),
+            ma = ARIMA(series ~ pdq(p = 0, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
+            arma = ARIMA(series ~ pdq(p = 0:12, d = 0, q = 0:12) + PDQ(0, 0, 0)),
+            arima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
+            sarima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0:24, 0:24, 0:24)))
+      } else {
+        fit <- NOAA_data %>%
+          filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
+          group_by_key() %>%
+          index_by(date = ~ year(.)) %>% 
+          summarise(
+            temperature = mean(temperature, na.rm = TRUE),
+            visibility = mean(visibility, na.rm = TRUE),
+            wind_speed = mean(wind_speed, na.rm = TRUE),
+            relative_humidity = mean(relative_humidity, na.rm = TRUE)
+          ) %>%  
+          gather("variable", "series", -c(date, station)) %>%
+          filter(variable == input$series_model) %>% 
+          model(
+            rw = ARIMA(series ~ pdq(p = 1, d = 0, q = 0) + PDQ(0, 0, 0)),
+            ar = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0) + PDQ(0, 0, 0)),
+            ma = ARIMA(series ~ pdq(p = 0, d = 0:12, q = 0:12) + PDQ(0, 0, 0)),
+            arma = ARIMA(series ~ pdq(p = 0:12, d = 0, q = 0:12) + PDQ(0, 0, 0)),
+            arima = ARIMA(series ~ pdq(p = 0:12, d = 0:12, q = 0:12) + PDQ(0, 0, 0)))
+      }
 
       data <- NOAA_data %>%
         filter(as.Date(time_hour) >= input$dt_model[1], as.Date(time_hour) <= input$dt_model[2]) %>%
@@ -300,9 +384,9 @@ server <- function(input, output) {
       glance() %>%
       filter(AIC == min(AIC)) %>%
       head(1)
-
+    
     forecast <- fit %>%
-      forecast(h = 30, level = 95) %>%
+      forecast(h = ifelse(input$one_step == "TRUE", 1, input$window_forecast), level = 95) %>%
       filter(.model == best_model$.model) %>%
       hilo(level = 95) %>%
       transmute(station,

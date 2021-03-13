@@ -100,6 +100,10 @@ body <- dashboardBody(
                        checkboxInput("one_step",
                                      "One-step-ahead prediction"),
                        hr(),
+                       sliderInput("window_forecast", "Prediction window",
+                                   min = 2, max = 100, value = 30
+                       ),
+                       hr(),
                        checkboxInput("seasonal_step",
                                      "Include seasonal parameters"),
                        hr(),
